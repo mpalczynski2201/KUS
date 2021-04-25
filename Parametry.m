@@ -131,7 +131,12 @@ Tp=0.000001
 K1=Kr
 K2=Kr*((Tp/Ti)-1)
 
+
 %% Ad 5 - Wykorzystując kwantyzatory. Doprowadzić do powstania cyklu granicznego
+%W modelu DyskretnyUkladKwant dodałem kwantyzatory
+UZak = 10 %zakres pomiarowy
+Nkwant= 12 %ilość bitów kwantyztora
+qkwant = UZak/(2^(Nkwant)-1) %poziom kwantyzacji
 
 
 %% Ad 6 - Dokonać symulacji rozruchu napędem z momentem obciążenia. Na rysunku z wynikiem nanieść linią prostą wartość dopuszczalną prądu twornika.
