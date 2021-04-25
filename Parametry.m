@@ -40,7 +40,7 @@ Kp = 1.5*Un / 10; % Wzmocnienie regulatora tyrystorowego
 
 
 
-%% Ad1
+%% Ad1 - Wyznaczyć transmitancje Gwu,Gwm,Giu,Gim i narysować odpowiedzi skokowe prądu twornika I, jego pochodnej i prędkości kątowej omega
 % Obliczenie transmitancji (8):
 
 % GwU
@@ -64,7 +64,7 @@ MIM = [B*T B 1];
 sys = tf(LIM,MIM)
 
 
-%% Ad2
+%% Ad2 - Wyznaczyć nastawy regulatorów i wykonać dla nich symulacje.
 % Regulator prądu PI - kryterium modułowe:
 %
 tau0 = 3.3*1e-3; % stała czasowa regulatora tyrystorowego [s]
@@ -86,5 +86,58 @@ Trw = 8*tau0; % stała czasowa regulatora prędkości [s]
 % domega = 0.02*wn;
 % Krw = Mn / (psien*kz*Kt*domega); % wzmocnienie regulatora prędkości
 
+%% Ad 3 - Wyznaczyć transmitancje układu otwartego. Wykreślić ploty Nyquista i Bodego i na ich podstawie wyznaczyć zapas modułu i fazy oraz określić dopuszczalne opóźnienie
+%
+%GP - przekształtnik tyrystorowy
+tau0=3.3e-3
+Lp=[0 Kp]
+Mp=[tau0 1]
+Gp=tf(Lp,Mp)
+%GRi - regulator prądu
+Lgri=Kri*[Tri+1]   
+Mgri=[Tri]
+GRi=tf(Lgri,Mgri)
+%GRw - regulator prędkości typu PI
+Tr=4*beta
+Kw=J/(2*Kt*kz*beta*psien)
+Lgrw=Kw*[Tr 1]
+Mgrw=[Tr 0]
+GRw=tf(Lgrw, Mgrw)
+%Gs 
+sigma=sum(T)
+Mgs=[sigma 1]
+Gs=tf(1,Mgs)
+
+%Gj
+Gj=tf(1,[J 0])
+
+%sklejamy transmitancje ze sobą
+Gskladowe=(GRi*Gp*Gs*psien*Gj)/(1+GRi*Gp*Gs*psien*Gj*Y)
+%i dodaje trzy obok siebie
+G1=series(GRw,Gskladowe)
+G=series(G1,Kt)
+
+margin(G)
+nyquist(G)
+opoznienie=allmargin(G)
+
+%% Ad 4 - Dokonać dyskretyzacji regulatorów działania ciągłego i wykonać symulacje dla różnych Tp
+%Model DyskretnyUklad.slx
+Kr=(J*Y)/(4*Kt*tau0*psien)
+Ti=T
+%Tp=0.0006 % czas próbkowania
+%Tp= 0.0009
+Tp=0.000001
+K1=Kr
+K2=Kr*((Tp/Ti)-1)
+
+%% Ad 5 - Wykorzystując kwantyzatory. Doprowadzić do powstania cyklu granicznego
 
 
+%% Ad 6 - Dokonać symulacji rozruchu napędem z momentem obciążenia. Na rysunku z wynikiem nanieść linią prostą wartość dopuszczalną prądu twornika.
+V=(Kp*Y/Rt)*((B*beta)/(sqrt(B*T)-beta))
+Mu=Mn
+dI=(psien*V*Mu)/(((psien.^2)*V)+(J*Kp*Y)) %Wartośc dopuszczalna prądu twornika według wzoru
+
+
+%% Ad 7 - Dokonać obciążenia udarowego momentem nominalnym Mn napędu pracującego z prędkością omegan
